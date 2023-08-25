@@ -5,8 +5,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SeinfieldCalendar"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="Seinfield Calendar" Height="320" Width="320" ResizeMode="NoResize">
+    <StackPanel Margin="1" HorizontalAlignment="Center">
+        <Grid HorizontalAlignment="Left">
+            <Grid.ColumnDefinitions >
+                <ColumnDefinition Width="100"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            
+            <Label HorizontalAlignment="Left" Grid.Column="0">Month:</Label>
+            <Label HorizontalAlignment="Left" Grid.Column="1">Seinfield Calendar</Label>
+        </Grid>
         
-    </Grid>
+        <Grid x:Name="seinfieldCalendar" Background="Aqua" HorizontalAlignment="Center" VerticalAlignment="Top">
+        </Grid>
+    </StackPanel>
 </Window>
