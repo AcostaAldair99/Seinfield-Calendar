@@ -26,9 +26,38 @@ namespace SeinfieldCalendar
         public MainWindow()
         {
             InitializeComponent();
-            setCalendar();
+            /// setCalendar();
+            
+            createCalendar();
         }
-    
+
+        private void createCalendar()
+        {
+            setCalendarColumns();
+            setCalendarRows();
+            DateTime currentDate = DateTime.Today;
+            int daysOfMonth = DateTime.DaysInMonth(currentDate.Year,currentDate.Month);
+            DateTime firstDayOfMonth = new DateTime(currentDate.Year, currentDate.Month, 1);
+
+            monthLabel.Content = new DateTime(currentDate.Year, currentDate.Month, 1).ToString("MMMM");
+
+            for(int day = 1; day <= daysOfMonth; day++)
+            {
+                int row = (day + (int)firstDayOfMonth.DayOfWeek - 1) / 7;
+                int column = ((day - 1) + (int)firstDayOfMonth.DayOfWeek) % 7;
+
+                Button date = getButtonItem(day);
+                Console.WriteLine(date.ToString());
+
+                
+                Grid.SetRow(date, row);
+                Grid.SetColumn(date, column);
+                seinfieldCalendar.Children.Add(date);
+            }
+
+
+        }   
+
         private void setCalendarColumns()
         {
             ColumnDefinition Sunday = new ColumnDefinition();
@@ -84,12 +113,17 @@ namespace SeinfieldCalendar
         {
             setCalendarColumns();
             setCalendarRows();
+
+            DateTime currentDate = DateTime.Now;
+            DateTime date = new DateTime(currentDate.Year, currentDate.Month, 1);
+            DayOfWeek dw = date.DayOfWeek;
+
             //Here we gonna create an label and put it in the grid 
-            for(int i = 0; i < seinfieldCalendar.ColumnDefinitions.Count ; i++)
+            for(int i = 0 ; i< seinfieldCalendar.ColumnDefinitions.Count ; i++)
             {
                 for(int j = 0;j<seinfieldCalendar.RowDefinitions.Count;j++)
                 {
-                    Button day = getButtonItem(i);
+                    Button day = getButtonItem((int)(dw));
                     seinfieldCalendar.Children.Add(day);
                     Grid.SetColumn(day, i);
                     Grid.SetRow(day, j);
@@ -105,9 +139,16 @@ namespace SeinfieldCalendar
         {
             Button n = new Button();
             n.Content = Convert.ToString(value);
+            n.HorizontalAlignment = HorizontalAlignment.Stretch;
+            n.VerticalAlignment = VerticalAlignment.Stretch;
+            n.Click += (sender, e) => dateClick(value);
             return n;
         }
 
+        private void dateClick(int day)
+        {
+            MessageBox.Show($"You click in the date {day}");
+        }
     }
 
 }

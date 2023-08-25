@@ -5,19 +5,24 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SeinfieldCalendar"
         mc:Ignorable="d"
-        Title="Seinfield Calendar" Height="320" Width="320" ResizeMode="NoResize">
+        Title="Seinfield Calendar" Height="320" Width="320">
     <StackPanel Margin="1" HorizontalAlignment="Center">
-        <Grid HorizontalAlignment="Left">
+        <Grid>
             <Grid.ColumnDefinitions >
                 <ColumnDefinition Width="100"></ColumnDefinition>
-                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="120"></ColumnDefinition>
+                <ColumnDefinition Width="50"></ColumnDefinition>
+                <ColumnDefinition Width="50"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            
-            <Label HorizontalAlignment="Left" Grid.Column="0">Month:</Label>
+
+            <Label x:Name="monthLabel" HorizontalAlignment="Left" Grid.Column="0"></Label>
             <Label HorizontalAlignment="Left" Grid.Column="1">Seinfield Calendar</Label>
+            <Button x:Name="backMonthButton" Grid.Column="2">Up</Button>
+            <Button x:Name="nextMonthButton" Grid.Column="3">Down</Button>
         </Grid>
+        <Grid x:Name="daysGrid"></Grid>
         
-        <Grid x:Name="seinfieldCalendar" Background="Aqua" HorizontalAlignment="Center" VerticalAlignment="Top">
+        <Grid x:Name="seinfieldCalendar" Background="Aqua">
         </Grid>
     </StackPanel>
 </Window>
