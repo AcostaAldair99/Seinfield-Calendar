@@ -1,19 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System.Windows.Resources;
 
 namespace SeinfieldCalendar
 {
@@ -39,33 +32,56 @@ namespace SeinfieldCalendar
         private void setStyles()
         {
 
-            SolidColorBrush buttonBackgroundBrush = new SolidColorBrush(Colors.LightBlue);
-            buttonBackgroundBrush.Freeze();
+            SolidColorBrush buttonBackgroundDays = new SolidColorBrush(Colors.MediumSlateBlue);
+            buttonBackgroundDays.Freeze();
 
-            Style buttonStyle = new Style(typeof(Button));
-            buttonStyle.Setters.Add(new Setter(Button.BackgroundProperty, buttonBackgroundBrush));
-            buttonStyle.Setters.Add(new Setter(Button.ForegroundProperty, Brushes.White));
+            Style buttonStyleDays = new Style(typeof(Button));
 
-            Resources.Add("ButtonBackgroundBrush", buttonBackgroundBrush);
-            Resources.Add("ButtonStyle", buttonStyle);
+
+            buttonStyleDays.Setters.Add(new Setter(Button.BackgroundProperty, buttonBackgroundDays));
+            buttonStyleDays.Setters.Add(new Setter(Button.ForegroundProperty, Brushes.White));
+
+            Resources.Add("ButtonBackgroundBrush", buttonBackgroundDays);
+            Resources.Add("ButtonStyleDays", buttonStyleDays);
+
+
+
+
+
         }
 
         private void createCalendar()
         {
             setStyles();
-            currentDate = DateTime.Today;
             setCalendarColumns();
             setCalendarRows();
+
+            currentDate = DateTime.Today;
+            
             setLabelDays();
+            setMonthButtons();
 
             monthLabel.Content = new DateTime(currentDate.Year, currentDate.Month, 1).ToString("yyyy MMM");
             
             setDaysInCalendar(currentDate);
 
+           
+
+        }
+
+        private void setMonthButtons()
+        {
+            nextMonthButton.Style = (Style)Resources["ButtonStyleDays"];
+            prevMonthButton.Style = (Style)Resources["ButtonStyleDays"];
+
+            nextMonthButton.Cursor = Cursors.Hand;
+            prevMonthButton.Cursor = Cursors.Hand;
+
+            nextMonthButton.Content = ">";
+            prevMonthButton.Content = "<";
 
             nextMonthButton.Click += (sender, e) => changeCurrentMonth(1);
             prevMonthButton.Click += (senter, e) => changeCurrentMonth(-1);
-
         }
 
         private void setLabelDays()
@@ -170,12 +186,73 @@ namespace SeinfieldCalendar
         private Button getButtonItem(int value)
         {
             Button n = new Button();
-            n.Content = Convert.ToString(value);
-            n.Style = (Style)Resources["ButtonStyle"];
+
+
+
+
+            n.Content = setButtonElements(value);
+            //n.Style = (Style)Resources["ButtonStyleDays"];
+
+
+
             n.HorizontalAlignment = HorizontalAlignment.Stretch;
             n.VerticalAlignment = VerticalAlignment.Stretch;
-            n.Click += (sender, e) => dateClick(value);
+            n.Cursor = Cursors.Hand;
+
+
+
+
+            n.Click += (sender, e) => setLinkToChain(n);
+               
             return n;
+        }
+
+        public StackPanel setButtonElements(int value)
+        {
+            
+
+            Label lblDay = new Label();
+            lblDay.HorizontalAlignment = HorizontalAlignment.Center;
+            lblDay.Content = Convert.ToString(value);
+
+            StackPanel cv = new StackPanel();
+            
+            cv.Children.Add(lblDay);
+            return cv;
+        }
+
+        public Image getImage()
+        {
+            Image image = new Image();
+            image.Source = new BitmapImage(new Uri("/Resources/xxx.jpg", UriKind.Relative)); 
+            image.Width = 40;
+            image.Height = 40;
+            return image;
+        }
+
+
+        private void setLinkToChain(Button btn)
+        {
+            MessageBoxResult result = MessageBox.Show("¿You dont break the chain?", "Question",
+                                                      MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result == MessageBoxResult.Yes)
+            {
+                
+                StackPanel sp = btn.Content as StackPanel;
+                if(sp != null)
+                {
+                    sp.Children.RemoveAt(0);
+                    Image img = getImage();
+                    sp.Children.Add(img);
+                    
+                }
+               
+
+                string day = btn.Content.ToString();
+                //DateTime dateEstablished = new DateTime(currentDate.Year, currentDate.Month, Convert.ToInt32(day));
+                //MessageBox.Show(dateEstablished.ToString("yyyy MMMM dd"));
+                
+            }
         }
 
         private Label getLabelItem(string content)
@@ -187,16 +264,6 @@ namespace SeinfieldCalendar
             return n;
         }
 
-
-        private void dateClick(int day)
-        {
-            MessageBox.Show($"You click in the date {day}");
-        }
-
-        private void nextMonthButton_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
     }
 
 }
