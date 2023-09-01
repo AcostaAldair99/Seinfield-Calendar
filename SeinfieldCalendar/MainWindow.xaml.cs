@@ -100,7 +100,7 @@ namespace SeinfieldCalendar
             setLabelDays();
             setMonthButtons();
 
-            monthLabel.Content = new DateTime(currentDate.Year, currentDate.Month, 1).ToString("yyyy MMM");
+            monthLabel.Content = new DateTime(currentDate.Year, currentDate.Month+1, 1).ToString("yyyy MMM");
             
             setDaysInCalendar(currentDate);
 

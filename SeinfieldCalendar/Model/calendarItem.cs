@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Microsoft.EntityFrameworkCore.Query.Internal;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -11,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Xml.Linq;
 
@@ -22,6 +24,7 @@ namespace SeinfieldCalendar.Model
         public Button btnContainer { get; set; }
         private  SQLiteConnection connection { get; set; }
 
+        private readonly DateTime currentDate = DateTime.Today;
 
         public calendarItem(DateTime date,int day,SQLiteConnection conn)
         {
@@ -38,14 +41,26 @@ namespace SeinfieldCalendar.Model
         public Button setButton()
         {
             btnContainer = new Button();
-            btnContainer.Content = setButtonElements(this.dateOfItem.Day);
-            //n.Style = (Style)Resources["ButtonStyleDays"];
 
+            btnContainer.Content = setButtonElements(this.dateOfItem.Day);
+
+            //This shit is for styles of the buttons
+            //n.Style = (Style)Resources["ButtonStyleDays"];
+            SolidColorBrush borderColor = new SolidColorBrush(Colors.Red);
+          
             btnContainer.HorizontalAlignment = HorizontalAlignment.Stretch;
             btnContainer.VerticalAlignment = VerticalAlignment.Stretch;
-            btnContainer.Cursor = Cursors.Hand;
 
-            btnContainer.Click += (sender, e) => setLinkToChain(this.btnContainer);
+            DateTime tt = new DateTime(currentDate.Year, currentDate.Month + 1, 1);
+            if(this.dateOfItem == tt)
+            {
+                btnContainer.Cursor = Cursors.Hand;
+                btnContainer.Click += (sender, e) => setLinkToChain(this.btnContainer);
+                btnContainer.BorderBrush = borderColor;
+                btnContainer.BorderThickness = new Thickness(4, 4, 4, 4); // Left, Top, Right, Bottom
+            }
+
+           
 
             return btnContainer;
         }
@@ -72,11 +87,11 @@ namespace SeinfieldCalendar.Model
                 StackPanel sp = btn.Content as StackPanel;
                 if (sp != null)
                 {
-                    sp.Children.RemoveAt(0);
-                    Image img = getImage();
-                    sp.Children.Add(img);
+
+                    changeStateOfButton(sp);
+                    this.btnContainer.BorderBrush = null;
+                    this.btnContainer.BorderThickness = new Thickness(0); // Left, Top, Right, Bottom
                     insertData(this.dateOfItem.ToString("dd/MM/yyyy"));
-                    btn.IsEnabled = false;
                 }
             }
         }
@@ -107,7 +122,7 @@ namespace SeinfieldCalendar.Model
             connection.Close();
         }
 
-
+        //The only reason to use SHA256 is because i read a article about it and i wanna use it
         private string ComputeSHA256Hash(string input)
         {
             using (SHA256 sha256 = SHA256.Create())
@@ -130,11 +145,15 @@ namespace SeinfieldCalendar.Model
             StackPanel sp = this.btnContainer.Content as StackPanel;
             if (sp != null)
             {
-                sp.Children.RemoveAt(0);
-                Image img = getImage();
-                sp.Children.Add(img);
-                btnContainer.IsEnabled = false;
+                changeStateOfButton(sp);
             }
+        }
+
+        public void changeStateOfButton(StackPanel sp)
+        {
+            sp.Children.RemoveAt(0);
+            Image img = getImage();
+            sp.Children.Add(img);
         }
 
     }
