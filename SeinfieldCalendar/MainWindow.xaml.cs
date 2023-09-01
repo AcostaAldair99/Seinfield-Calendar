@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Migrations.Operations;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -35,6 +36,21 @@ namespace SeinfieldCalendar
             
         }
 
+        private void insertData(string date)
+        {
+            sqlConnection.Open();
+
+            string insertQuery = "INSERT INTO chain_dates (date) VALUES (@Value2)";
+
+            using (SQLiteCommand command = new SQLiteCommand(insertQuery, sqlConnection))
+            {
+                
+                command.Parameters.AddWithValue("@Value2", date);
+
+                command.ExecuteNonQuery();
+            }
+            sqlConnection.Close();
+        }
 
         private SQLiteConnection createConnectionToSqlite()
         {
@@ -252,20 +268,32 @@ namespace SeinfieldCalendar
                                                       MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (result == MessageBoxResult.Yes)
             {
-                
+               
                 StackPanel sp = btn.Content as StackPanel;
                 if(sp != null)
                 {
+                    Label lbl = sp.Children[0] as Label;
+                    String day = lbl.Content.ToString();
                     sp.Children.RemoveAt(0);
+                    
                     Image img = getImage();
                     sp.Children.Add(img);
-                    
+
+                    DateTime dateEstablished = new DateTime(currentDate.Year, currentDate.Month, int.Parse(day));
+                    string date = dateEstablished.ToString("dd/MM/yyyy");
+                    MessageBox.Show(date);
+                    insertData(date);
                 }
 
-                string day = btn.Content.ToString();
-                DateTime dateEstablished = new DateTime(currentDate.Year, currentDate.Month,int.Parse(day));
-                MessageBox.Show(dateEstablished.ToString("yyyy MMMM dd"));
-                
+
+
+                //DateTime dateEstablished = new DateTime(currentDate.Year, currentDate.Month,int.Parse(day));
+                //string date = dateEstablished.ToString("dd/MM/yyyy");
+                //Debug.WriteLine(date);
+                //MessageBox.Show(date);
+                //insertData(date);
+
+
             }
         }
 
