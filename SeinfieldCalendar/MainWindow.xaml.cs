@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Data.SQLite;
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Resources;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace SeinfieldCalendar
 {
@@ -19,14 +24,24 @@ namespace SeinfieldCalendar
         private readonly int ROW_HEIGHT = 40;
         private DateTime currentDate;
         private readonly List<string> days = new List<string> { "Su", "Mo", "Tu", "We", "Th", "Fr", "Sa" };
-        private readonly Func<int, int, int> add = (a, b) => a + b;
-        private readonly Func<int, int, int> subtract = (a, b) => a - b;
+        private readonly SQLiteConnection sqlConnection;
+
 
         public MainWindow()
         {
             InitializeComponent();
-            /// setCalendar();
+            sqlConnection = createConnectionToSqlite();
             createCalendar();
+            
+        }
+
+
+        private SQLiteConnection createConnectionToSqlite()
+        {
+            string relativeFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "data.db");
+            string connection = $"Data Source={relativeFolderPath};Version=3;New=False;Compress=True;";
+            SQLiteConnection sqlite_conn = new SQLiteConnection(connection);
+            return sqlite_conn;
         }
 
         private void setStyles()
@@ -246,11 +261,10 @@ namespace SeinfieldCalendar
                     sp.Children.Add(img);
                     
                 }
-               
 
                 string day = btn.Content.ToString();
-                //DateTime dateEstablished = new DateTime(currentDate.Year, currentDate.Month, Convert.ToInt32(day));
-                //MessageBox.Show(dateEstablished.ToString("yyyy MMMM dd"));
+                DateTime dateEstablished = new DateTime(currentDate.Year, currentDate.Month,int.Parse(day));
+                MessageBox.Show(dateEstablished.ToString("yyyy MMMM dd"));
                 
             }
         }

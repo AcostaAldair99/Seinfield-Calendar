@@ -7,3 +7,8 @@
 
 SeinfieldCalendarApp.sln
 LICENSE
+
+/packages
+SeinfieldCalendar/Data/
+SeinfieldCalendar/data.db
+SeinfieldCalendar/packages.config
