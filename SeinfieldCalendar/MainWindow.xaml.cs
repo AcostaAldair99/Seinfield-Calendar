@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations.Operations;
+using SeinfieldCalendar.Model;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -50,6 +51,31 @@ namespace SeinfieldCalendar
                 command.ExecuteNonQuery();
             }
             sqlConnection.Close();
+        }
+
+        private void getData()
+        {
+            sqlConnection.Open();
+            string selectQuery = "SELECT * FROM chain_dates";
+            List<string> dates = new List<string>();
+            using (SQLiteCommand command = new SQLiteCommand(selectQuery, sqlConnection))
+            {
+                using (SQLiteDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        //int id = reader.GetInt32(0);
+                        //string name = reader.GetString(1);
+                        dates.Add(reader.GetString(1));
+                        // Process other columns as needed
+                    }
+                }
+            }
+            sqlConnection.Close();
+            foreach(string date in dates)
+            {
+                Debug.WriteLine(date);
+            }
         }
 
         private SQLiteConnection createConnectionToSqlite()
@@ -150,11 +176,12 @@ namespace SeinfieldCalendar
                 int row = (day + (int)firstDayOfMonth.DayOfWeek - 1) / 7 + 1;
                 int column = ((day - 1) + (int)firstDayOfMonth.DayOfWeek) % 7;
 
-                Button date = getButtonItem(day);
+                calendarItem date = new calendarItem(monthCalendar,day);
+                Debug.WriteLine(date.getDayOfItem().ToString("dd/MM/yyyy"));
 
-                Grid.SetRow(date, row);
-                Grid.SetColumn(date, column);
-                seinfieldCalendar.Children.Add(date);
+                Grid.SetRow(date.btnContainer, row);
+                Grid.SetColumn(date.btnContainer, column);
+                seinfieldCalendar.Children.Add(date.btnContainer);
             }
 
         }
@@ -202,7 +229,6 @@ namespace SeinfieldCalendar
             week3.Height = new GridLength(ROW_HEIGHT, GridUnitType.Pixel);
             week4.Height = new GridLength(ROW_HEIGHT, GridUnitType.Pixel);
             week5.Height = new GridLength(ROW_HEIGHT, GridUnitType.Pixel);
-            ///week6.Height = new GridLength(ROW_HEIGHT, GridUnitType.Pixel);
 
             seinfieldCalendar.RowDefinitions.Add(daysRow);
             seinfieldCalendar.RowDefinitions.Add(week1);
@@ -210,91 +236,7 @@ namespace SeinfieldCalendar
             seinfieldCalendar.RowDefinitions.Add(week3);
             seinfieldCalendar.RowDefinitions.Add(week4);
             seinfieldCalendar.RowDefinitions.Add(week5);
-            //seinfieldCalendar.RowDefinitions.Add(week6);
-        }
 
-        //This will be every day on the calendar
-        private Button getButtonItem(int value)
-        {
-            Button n = new Button();
-
-
-
-
-            n.Content = setButtonElements(value);
-            //n.Style = (Style)Resources["ButtonStyleDays"];
-
-
-
-            n.HorizontalAlignment = HorizontalAlignment.Stretch;
-            n.VerticalAlignment = VerticalAlignment.Stretch;
-            n.Cursor = Cursors.Hand;
-
-
-
-
-            n.Click += (sender, e) => setLinkToChain(n);
-               
-            return n;
-        }
-
-        public StackPanel setButtonElements(int value)
-        {
-            
-
-            Label lblDay = new Label();
-            lblDay.HorizontalAlignment = HorizontalAlignment.Center;
-            lblDay.Content = Convert.ToString(value);
-
-            StackPanel cv = new StackPanel();
-            
-            cv.Children.Add(lblDay);
-            return cv;
-        }
-
-        public Image getImage()
-        {
-            Image image = new Image();
-            image.Source = new BitmapImage(new Uri("/Resources/xxx.jpg", UriKind.Relative)); 
-            image.Width = 40;
-            image.Height = 40;
-            return image;
-        }
-
-
-        private void setLinkToChain(Button btn)
-        {
-            MessageBoxResult result = MessageBox.Show("¿You dont break the chain?", "Question",
-                                                      MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (result == MessageBoxResult.Yes)
-            {
-               
-                StackPanel sp = btn.Content as StackPanel;
-                if(sp != null)
-                {
-                    Label lbl = sp.Children[0] as Label;
-                    String day = lbl.Content.ToString();
-                    sp.Children.RemoveAt(0);
-                    
-                    Image img = getImage();
-                    sp.Children.Add(img);
-
-                    DateTime dateEstablished = new DateTime(currentDate.Year, currentDate.Month, int.Parse(day));
-                    string date = dateEstablished.ToString("dd/MM/yyyy");
-                    MessageBox.Show(date);
-                    insertData(date);
-                }
-
-
-
-                //DateTime dateEstablished = new DateTime(currentDate.Year, currentDate.Month,int.Parse(day));
-                //string date = dateEstablished.ToString("dd/MM/yyyy");
-                //Debug.WriteLine(date);
-                //MessageBox.Show(date);
-                //insertData(date);
-
-
-            }
         }
 
         private Label getLabelItem(string content)
