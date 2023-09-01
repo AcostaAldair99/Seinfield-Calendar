@@ -207,7 +207,7 @@ namespace SeinfieldCalendar
             RowDefinition week3 = new RowDefinition();
             RowDefinition week4 = new RowDefinition();
             RowDefinition week5 = new RowDefinition();
-           /// RowDefinition week6 = new RowDefinition();
+
 
             daysRow.Height = new GridLength(ROW_HEIGHT, GridUnitType.Pixel);
             week1.Height = new GridLength(ROW_HEIGHT, GridUnitType.Pixel);
