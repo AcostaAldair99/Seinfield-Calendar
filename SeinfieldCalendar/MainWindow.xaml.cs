@@ -158,7 +158,7 @@ namespace SeinfieldCalendar
                 int row = (day + (int)firstDayOfMonth.DayOfWeek - 1) / 7 + 1;
                 int column = ((day - 1) + (int)firstDayOfMonth.DayOfWeek) % 7;
 
-                calendarItem date = new calendarItem(monthCalendar,day,sqlConnection);
+                calendarItem date = new calendarItem(monthCalendar,day);
                 if (savedDates.ContainsValue(date.getDayOfItemAsString()))
                 {
                     date.setChainItem();
