@@ -1,8 +1,11 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Data.SQLite;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -17,16 +20,19 @@ namespace SeinfieldCalendar.Model
     {
         public DateTime dateOfItem { get; set; }
         public Button btnContainer { get; set; }
+        private  SQLiteConnection connection { get; set; }
 
-        public calendarItem(DateTime date,int day)
+
+        public calendarItem(DateTime date,int day,SQLiteConnection conn)
         {
-            dateOfItem = new DateTime(date.Year,date.Month,day);
-            btnContainer = setButton();
+            this.dateOfItem = new DateTime(date.Year,date.Month,day);
+            this.btnContainer = setButton();
+            this.connection = conn;
         }
 
-        public DateTime getDayOfItem()
+        public string getDayOfItemAsString()
         {
-            return this.dateOfItem;
+            return this.dateOfItem.ToString("dd/MM/yyyy");
         }
 
         public Button setButton()
@@ -66,15 +72,11 @@ namespace SeinfieldCalendar.Model
                 StackPanel sp = btn.Content as StackPanel;
                 if (sp != null)
                 {
-                    Label lbl = sp.Children[0] as Label;
-                    //String day = lbl.Content.ToString();
                     sp.Children.RemoveAt(0);
                     Image img = getImage();
                     sp.Children.Add(img);
-                    //DateTime dateEstablished = new DateTime(currentDate.Year, currentDate.Month, int.Parse(day));
-                    //string date = dateEstablished.ToString("dd/MM/yyyy");
-                    //insertData(date);
-                    //btn.IsEnabled = false;
+                    insertData(this.dateOfItem.ToString("dd/MM/yyyy"));
+                    btn.IsEnabled = false;
                 }
             }
         }
@@ -85,6 +87,54 @@ namespace SeinfieldCalendar.Model
             image.Width = 40;
             image.Height = 40;
             return image;
+        }
+
+        private void insertData(string date)
+        {
+            connection.Open();
+
+            string insertQuery = "INSERT INTO chain_dates (id,date) VALUES (@Value1,@Value2)";
+            string id = ComputeSHA256Hash(date);
+
+            using (SQLiteCommand command = new SQLiteCommand(insertQuery, connection))
+            {
+
+                command.Parameters.AddWithValue("@Value1", id);
+                command.Parameters.AddWithValue("@Value2", date);
+
+                command.ExecuteNonQuery();
+            }
+            connection.Close();
+        }
+
+
+        private string ComputeSHA256Hash(string input)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] bytes = Encoding.UTF8.GetBytes(input);
+                byte[] hashBytes = sha256.ComputeHash(bytes);
+
+                StringBuilder stringBuilder = new StringBuilder();
+                foreach (byte b in hashBytes)
+                {
+                    stringBuilder.Append(b.ToString("x2"));
+                }
+
+                return stringBuilder.ToString();
+            }
+        }
+
+        public void setChainItem()
+        {
+            StackPanel sp = this.btnContainer.Content as StackPanel;
+            if (sp != null)
+            {
+                sp.Children.RemoveAt(0);
+                Image img = getImage();
+                sp.Children.Add(img);
+                btnContainer.IsEnabled = false;
+            }
         }
 
     }

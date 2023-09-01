@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using SeinfieldCalendar.Model;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -27,55 +28,35 @@ namespace SeinfieldCalendar
         private DateTime currentDate;
         private readonly List<string> days = new List<string> { "Su", "Mo", "Tu", "We", "Th", "Fr", "Sa" };
         private readonly SQLiteConnection sqlConnection;
-
+        private Dictionary<string, string> savedDates = new Dictionary<string, string>();
 
         public MainWindow()
         {
             InitializeComponent();
             sqlConnection = createConnectionToSqlite();
             createCalendar();
-            
         }
 
-        private void insertData(string date)
-        {
-            sqlConnection.Open();
-
-            string insertQuery = "INSERT INTO chain_dates (date) VALUES (@Value2)";
-
-            using (SQLiteCommand command = new SQLiteCommand(insertQuery, sqlConnection))
-            {
-                
-                command.Parameters.AddWithValue("@Value2", date);
-
-                command.ExecuteNonQuery();
-            }
-            sqlConnection.Close();
-        }
 
         private void getData()
         {
             sqlConnection.Open();
             string selectQuery = "SELECT * FROM chain_dates";
-            List<string> dates = new List<string>();
+
             using (SQLiteCommand command = new SQLiteCommand(selectQuery, sqlConnection))
             {
                 using (SQLiteDataReader reader = command.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        //int id = reader.GetInt32(0);
-                        //string name = reader.GetString(1);
-                        dates.Add(reader.GetString(1));
+                        string id = reader.GetString(0);
+                        string name = reader.GetString(1);
+                        savedDates.Add(id, name);
                         // Process other columns as needed
                     }
                 }
             }
             sqlConnection.Close();
-            foreach(string date in dates)
-            {
-                Debug.WriteLine(date);
-            }
         }
 
         private SQLiteConnection createConnectionToSqlite()
@@ -109,6 +90,7 @@ namespace SeinfieldCalendar
 
         private void createCalendar()
         {
+            getData();
             setStyles();
             setCalendarColumns();
             setCalendarRows();
@@ -176,8 +158,12 @@ namespace SeinfieldCalendar
                 int row = (day + (int)firstDayOfMonth.DayOfWeek - 1) / 7 + 1;
                 int column = ((day - 1) + (int)firstDayOfMonth.DayOfWeek) % 7;
 
-                calendarItem date = new calendarItem(monthCalendar,day);
-                Debug.WriteLine(date.getDayOfItem().ToString("dd/MM/yyyy"));
+                calendarItem date = new calendarItem(monthCalendar,day,sqlConnection);
+                if (savedDates.ContainsValue(date.getDayOfItemAsString()))
+                {
+                    date.setChainItem();
+                }
+
 
                 Grid.SetRow(date.btnContainer, row);
                 Grid.SetColumn(date.btnContainer, column);
