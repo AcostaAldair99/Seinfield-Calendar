@@ -176,12 +176,12 @@ namespace SeinfieldCalendar.Entities
                 dayItem date = new dayItem(this.mainWindow, this.currentDate, day);
                 string data = date.getDayOfItem().ToString("dd/MM/yyyy");
 
-                if(this.realDate == date.getDayOfItem())
+                if(this.realDate == date.getDayOfItem() && !savedDates.Contains(data))
                 {
                     date.setCurrentDay();
                 }
 
-                if (savedDates.Contains(data))
+                if (savedDates.Contains(data) )
                 {
                     date.setChain();
                 }
