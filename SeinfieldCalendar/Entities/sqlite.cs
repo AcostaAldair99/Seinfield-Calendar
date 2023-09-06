@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Data.SQLite;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -11,11 +12,11 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace SeinfieldCalendar.Entities
 {
-    public class sqliteClient
+    public class sqlite
     {
         private string pathToDb { get; set; }
         private SQLiteConnection conn;
-        public sqliteClient(string pathToDb)
+        public sqlite(string pathToDb)
         {
             this.pathToDb = pathToDb;
             this.conn = getConnectionToSqlite();
@@ -29,8 +30,10 @@ namespace SeinfieldCalendar.Entities
             return sqlite_conn;
         }
 
-        public void getDates()
+        public List<string> getDates()
         {
+            //In this dictionary we store all the dates
+            List<string> dates = new List<string>();
             this.conn.Open();
             string selectQuery = "SELECT * FROM chain_dates";
 
@@ -40,32 +43,35 @@ namespace SeinfieldCalendar.Entities
                 {
                     while (reader.Read())
                     {
-                        string id = reader.GetString(0);
-                        string name = reader.GetString(1);
-                        //savedDates.Add(id, name);
-                        // Process other columns as needed
+                        string date = reader.GetString(1)+"/"+reader.GetString(2)+"/"+reader.GetString(3);
+                        dates.Add(date);
                     }
                 }
             }
             this.conn.Close();
+            return dates;
         }
 
-        public void insertDates()
+        public int insertDate(string date)
         {
             this.conn.Open();
-
+            int rowsAffected = 0;
+            string[] dateValues = date.Split('/');
             string insertQuery = "INSERT INTO chain_dates (id,day,month,year) VALUES (@Value1,@Value2,@Value3,@Value4)";
             string id = ComputeSHA256Hash(date);
-
             using (SQLiteCommand command = new SQLiteCommand(insertQuery, this.conn))
             {
 
                 command.Parameters.AddWithValue("@Value1", id);
-                command.Parameters.AddWithValue("@Value2", date);
+                command.Parameters.AddWithValue("@Value2", dateValues[0]);
+                command.Parameters.AddWithValue("@Value3", dateValues[1]);
+                command.Parameters.AddWithValue("@Value4", dateValues[2]);
 
-                command.ExecuteNonQuery();
+                //The functions ExecuteNonQuery returns the number of affected rows
+                rowsAffected = command.ExecuteNonQuery();
             }
             this.conn.Close();
+            return rowsAffected;
         }
 
         //The only reason to use SHA256 is because i read a article about it and i wanna use it
