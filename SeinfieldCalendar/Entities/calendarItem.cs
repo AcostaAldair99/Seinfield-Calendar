@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows;
 using System.Windows.Controls;
-using SeinfieldCalendar.Properties;
 using System.Windows.Media;
 using SeinfieldCalendar.Model;
 using System.IO;
-using System.Data.Entity.Core.Metadata.Edm;
 using System.Diagnostics;
 
 namespace SeinfieldCalendar.Entities
@@ -22,13 +20,15 @@ namespace SeinfieldCalendar.Entities
         private readonly int ROW_HEIGHT = 40;
         private DateTime currentDate;
         private readonly List<string> days = new List<string> { "Su", "Mo", "Tu", "We", "Th", "Fr", "Sa" };
-        private MainWindow mainWindow; 
+        private readonly MainWindow mainWindow;
+        private readonly DateTime realDate;
 
         public calendarItem(MainWindow mw,DateTime currentDate)
         {
             this.mainWindow = mw;
             this.currentDate = currentDate;
-        }
+            this.realDate = currentDate;
+    }
 
 
         public void createCalendar()
@@ -37,8 +37,6 @@ namespace SeinfieldCalendar.Entities
             setCalendarColumns();
             setCalendarRows();
 
-            //currentDate = DateTime.Today;
-
             setLabelDays();
             setMonthButtons();
 
@@ -46,14 +44,12 @@ namespace SeinfieldCalendar.Entities
             mainWindow.monthLabel.Content = new DateTime(this.currentDate.Year, this.currentDate.Month + 1, 1).ToString("yyyy MMM");
 
 
-            setDaysOfThe();
+            setDaysOfTheMonth();
         }
 
 
         private void setMonthButtons()
         {
-            //this.mainWindow.nextMonthButton.Style = (Style)Resources["ButtonStyleDays"];
-            //this.mainWindow.prevMonthButton.Style = (Style)Resources["ButtonStyleDays"];
 
             this.mainWindow.nextMonthButton.Cursor = Cursors.Hand;
             this.mainWindow.prevMonthButton.Cursor = Cursors.Hand;
@@ -61,8 +57,8 @@ namespace SeinfieldCalendar.Entities
             this.mainWindow.nextMonthButton.Content = ">";
             this.mainWindow.prevMonthButton.Content = "<";
 
-            //this.mainWindow.nextMonthButton.Click += (sender, e) => changeCurrentMonth(1);
-            //this.mainWindow.prevMonthButton.Click += (senter, e) => changeCurrentMonth(-1);
+            this.mainWindow.nextMonthButton.Click += (sender, e) => changeCurrentMonth(1);
+            this.mainWindow.prevMonthButton.Click += (senter, e) => changeCurrentMonth(-1);
         }
 
         private void setLabelDays()
@@ -80,10 +76,12 @@ namespace SeinfieldCalendar.Entities
 
         private Label getLabelItem(string content)
         {
-            Label n = new Label();
-            n.Content = content;
-            n.HorizontalAlignment = HorizontalAlignment.Center;
-            n.VerticalAlignment = VerticalAlignment.Center;
+            Label n = new Label
+            {
+                Content = content,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
             return n;
         }
 
@@ -107,16 +105,15 @@ namespace SeinfieldCalendar.Entities
 
 
 
-        /*private void changeCurrentMonth(int value)
+        private void changeCurrentMonth(int value)
         {
             DateTime nextMonth = currentDate.AddMonths(value);
-            monthLabel.Content = nextMonth.ToString("yyyy MMMM");
-            currentDate = nextMonth;
-            seinfieldCalendar.Children.Clear();
+            mainWindow.monthLabel.Content = nextMonth.ToString("yyyy MMMM");
+            this.currentDate = nextMonth;
+            mainWindow.seinfieldCalendar.Children.Clear();
             setLabelDays();
-            setDaysInCalendar(currentDate);
-
-        }*/
+            setDaysOfTheMonth();
+        }
 
 
         private void setCalendarColumns()
@@ -173,11 +170,11 @@ namespace SeinfieldCalendar.Entities
         }
 
 
-        public void setDaysOfThe()
+        public void setDaysOfTheMonth()
         {
-            sqlite itemConnection = new sqlite(pathToDb);
-            List<string> savedDates = itemConnection.getDates();
-            
+            SqliteConnector itemConnection = new SqliteConnector(pathToDb);
+            List<string> savedDates = itemConnection.getDates(this.currentDate);
+            Debug.WriteLine("Size of the query: "+savedDates.Count);
             int daysOfMonth = DateTime.DaysInMonth(this.currentDate.Year,this.currentDate.Month);
             DateTime firstDayOfMonth = new DateTime(this.currentDate.Year, this.currentDate.Month, 1);
 
@@ -189,6 +186,12 @@ namespace SeinfieldCalendar.Entities
 
                 dayItem date = new dayItem(this.currentDate, day);
                 string data = date.getDayOfItem().ToString("dd/MM/yyyy");
+
+                if(this.realDate == date.getDayOfItem())
+                {
+                    date.setCurrentDay();
+                }
+
                 if (savedDates.Contains(data))
                 {
                     date.setChain();

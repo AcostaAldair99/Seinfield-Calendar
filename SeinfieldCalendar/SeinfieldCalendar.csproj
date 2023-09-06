@@ -206,7 +206,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Entities\calendarItem.cs" />
-    <Compile Include="Entities\sqlite.cs" />
+    <Compile Include="Entities\SqliteConnector.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

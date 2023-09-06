@@ -1,22 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Data.SQLite;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+
 
 namespace SeinfieldCalendar.Entities
 {
-    public class sqlite
+    public class SqliteConnector
     {
         private string pathToDb { get; set; }
-        private SQLiteConnection conn;
-        public sqlite(string pathToDb)
+        private readonly SQLiteConnection conn;
+        public SqliteConnector(string pathToDb)
         {
             this.pathToDb = pathToDb;
             this.conn = getConnectionToSqlite();
@@ -30,13 +26,15 @@ namespace SeinfieldCalendar.Entities
             return sqlite_conn;
         }
 
-        public List<string> getDates()
+        public List<string> getDates(DateTime currentDate)
         {
+            string month = currentDate.ToString("MM");
+            string year = currentDate.ToString("yyyy");
             //In this dictionary we store all the dates
             List<string> dates = new List<string>();
             this.conn.Open();
-            string selectQuery = "SELECT * FROM chain_dates";
-
+            string selectQuery = $"SELECT * FROM chain_dates WHERE month = '{month}' AND year='{year}'";
+            Debug.WriteLine(selectQuery);
             using (SQLiteCommand command = new SQLiteCommand(selectQuery, this.conn))
             {
                 using (SQLiteDataReader reader = command.ExecuteReader())
