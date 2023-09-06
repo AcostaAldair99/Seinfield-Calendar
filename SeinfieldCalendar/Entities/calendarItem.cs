@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,6 +7,7 @@ using System.Windows.Media;
 using SeinfieldCalendar.Model;
 using System.IO;
 using System.Diagnostics;
+using System.Windows.Documents;
 
 namespace SeinfieldCalendar.Entities
 {
@@ -33,40 +31,63 @@ namespace SeinfieldCalendar.Entities
 
         public void createCalendar()
         {
-            setStyles();
             setCalendarColumns();
             setCalendarRows();
-
             setLabelDays();
-            setMonthButtons();
-
-
-            mainWindow.monthLabel.Content = new DateTime(this.currentDate.Year, this.currentDate.Month + 1, 1).ToString("yyyy MMM");
-
-
+            setCalendarElements();
             setDaysOfTheMonth();
         }
 
 
-        private void setMonthButtons()
+        private void setCalendarElements()
         {
+            this.mainWindow.monthLabel.Content = new DateTime(this.currentDate.Year, this.currentDate.Month + 1, 1).ToString("yyyy MMM");
+            this.mainWindow.monthLabel.Foreground = Brushes.White;
+
 
             this.mainWindow.nextMonthButton.Cursor = Cursors.Hand;
             this.mainWindow.prevMonthButton.Cursor = Cursors.Hand;
 
-            this.mainWindow.nextMonthButton.Content = ">";
-            this.mainWindow.prevMonthButton.Content = "<";
+            this.mainWindow.nextMonthButton.Content = setContentButtons(">");
+            this.mainWindow.prevMonthButton.Content = setContentButtons("<");
+
+            this.mainWindow.nextMonthButton.Background = Brushes.Transparent;
+            this.mainWindow.prevMonthButton.Background = Brushes.Transparent;
+
 
             this.mainWindow.nextMonthButton.Click += (sender, e) => changeCurrentMonth(1);
             this.mainWindow.prevMonthButton.Click += (senter, e) => changeCurrentMonth(-1);
         }
 
+        private StackPanel setContentButtons(string value)
+        {
+            Label content = new Label
+            {
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Content = value,
+                Foreground = Brushes.White,
+                FontWeight = FontWeights.Bold,
+                FontFamily = new FontFamily("Segoe UI")
+            };
+            StackPanel cv = new StackPanel();
+            cv.Children.Add(content);
+            return cv;
+        }
+
         private void setLabelDays()
         {
             int i = 0;
-            foreach (string d in days)
+            foreach (string day in days)
             {
-                Label lbl = getLabelItem(d);
+                Label lbl = new Label
+                {
+                    Content = day,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Foreground = Brushes.White,
+                    FontWeight = FontWeights.Bold,
+                    FontFamily = new FontFamily("Segoe UI")
+                };
                 Grid.SetRow(lbl, 0);
                 Grid.SetColumn(lbl, i);
                 this.mainWindow.seinfieldCalendar.Children.Add(lbl);
@@ -74,43 +95,12 @@ namespace SeinfieldCalendar.Entities
             }
         }
 
-        private Label getLabelItem(string content)
-        {
-            Label n = new Label
-            {
-                Content = content,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center
-            };
-            return n;
-        }
-
-
-        private void setStyles()
-        {
-
-            SolidColorBrush buttonBackgroundDays = new SolidColorBrush(Colors.MediumSlateBlue);
-            buttonBackgroundDays.Freeze();
-
-            Style buttonStyleDays = new Style(typeof(Button));
-
-
-            buttonStyleDays.Setters.Add(new Setter(Button.BackgroundProperty, buttonBackgroundDays));
-            buttonStyleDays.Setters.Add(new Setter(Button.ForegroundProperty, Brushes.White));
-
-            //Resources.Add("ButtonBackgroundBrush", buttonBackgroundDays);
-            //Resources.Add("ButtonStyleDays", buttonStyleDays);
-            //Resources.Add("ButtonStyleDays", buttonStyleDays);
-        }
-
-
-
         private void changeCurrentMonth(int value)
         {
-            DateTime nextMonth = currentDate.AddMonths(value);
-            mainWindow.monthLabel.Content = nextMonth.ToString("yyyy MMMM");
+            DateTime nextMonth = this.currentDate.AddMonths(value);
+            this.mainWindow.monthLabel.Content = nextMonth.ToString("yyyy MMM");
             this.currentDate = nextMonth;
-            mainWindow.seinfieldCalendar.Children.Clear();
+            this.mainWindow.seinfieldCalendar.Children.Clear();
             setLabelDays();
             setDaysOfTheMonth();
         }
@@ -174,7 +164,6 @@ namespace SeinfieldCalendar.Entities
         {
             SqliteConnector itemConnection = new SqliteConnector(pathToDb);
             List<string> savedDates = itemConnection.getDates(this.currentDate);
-            Debug.WriteLine("Size of the query: "+savedDates.Count);
             int daysOfMonth = DateTime.DaysInMonth(this.currentDate.Year,this.currentDate.Month);
             DateTime firstDayOfMonth = new DateTime(this.currentDate.Year, this.currentDate.Month, 1);
 
@@ -184,7 +173,7 @@ namespace SeinfieldCalendar.Entities
                 int row = (day + (int)firstDayOfMonth.DayOfWeek - 1) / 7 + 1;
                 int column = ((day - 1) + (int)firstDayOfMonth.DayOfWeek) % 7;
 
-                dayItem date = new dayItem(this.currentDate, day);
+                dayItem date = new dayItem(this.mainWindow, this.currentDate, day);
                 string data = date.getDayOfItem().ToString("dd/MM/yyyy");
 
                 if(this.realDate == date.getDayOfItem())

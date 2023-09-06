@@ -25,14 +25,16 @@ namespace SeinfieldCalendar.Model
         private readonly string pathToDb = Path.Combine(Directory.GetCurrentDirectory(), "data.db");
         public DateTime dateOfItem { get; set; }
         public Button btnContainer { get; set; }
+        private MainWindow wm;
 
         private readonly SqliteConnector itemConnection;
 
-        public dayItem(DateTime date,int day)
+        public dayItem(MainWindow wm,DateTime date,int day)
         {
             dateOfItem = new DateTime(date.Year,date.Month,day);
             btnContainer = setButton();
             itemConnection = new SqliteConnector(pathToDb);
+            this.wm = wm;
         }
 
         public DateTime getDayOfItem()
@@ -42,16 +44,19 @@ namespace SeinfieldCalendar.Model
 
         public Button setButton()
         {
-
             this.btnContainer = new Button
             {
                 Content = setButtonElements(),
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                Background = Brushes.Transparent,
+                
             };
 
-            return btnContainer;
+
+
+            return this.btnContainer;
         }
 
         private StackPanel setButtonElements()
@@ -59,7 +64,11 @@ namespace SeinfieldCalendar.Model
             Label lblDay = new Label
             {
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Content = this.dateOfItem.Day
+                VerticalAlignment = VerticalAlignment.Center,
+                Content = this.dateOfItem.Day,
+                Foreground = Brushes.White,
+                //FontWeight = FontWeights.Bold,
+                FontFamily = new FontFamily("Segoe UI")
             };
             StackPanel cv = new StackPanel();
             cv.Children.Add(lblDay);
@@ -68,10 +77,12 @@ namespace SeinfieldCalendar.Model
 
         private void setLinkToChain()
         {
-            MessageBoxResult result = MessageBox.Show("¿You dont break the chain?", "Question",
-                                                      MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (result == MessageBoxResult.Yes)
-            {
+            MessageBoxButton buttons = MessageBoxButton.YesNo;
+            MessageBoxImage icon = MessageBoxImage.Warning;
+            MessageBoxResult result = SeinfieldCalendar.Entities.MessageBoxEx.askQuestionYesNo(this.wm, "¿You dont break the chain?", "Warning",buttons,icon);
+
+           if (result == MessageBoxResult.Yes)
+           {
 
                 StackPanel sp = this.btnContainer.Content as StackPanel;
                 if (sp != null)
@@ -88,9 +99,10 @@ namespace SeinfieldCalendar.Model
         {
             Image image =   new Image
             {
-                Source = new BitmapImage(new Uri("/Resources/xxx.jpg", UriKind.Relative)),
-                Width = 40,
-                Height = 40
+                Source = new BitmapImage(new Uri("/Resources/link.png", UriKind.Relative)),
+                Width = 30,
+                Height = 30,
+                Opacity = 0.5,
             };
             return image;
         }
@@ -100,17 +112,19 @@ namespace SeinfieldCalendar.Model
             this.btnContainer.BorderBrush = null;
             this.btnContainer.BorderThickness = new Thickness(0);
             StackPanel sp = this.btnContainer.Content as StackPanel;
-            sp.Children.RemoveAt(0);
+            //sp.Children.RemoveAt(0);
             Image img = getImage();
             sp.Children.Add(img);
+            this.btnContainer.IsEnabled = false;
         }
 
         public void setCurrentDay()
         {
             SolidColorBrush borderColor = new SolidColorBrush(Colors.Red);
             this.btnContainer.BorderBrush = borderColor;
-            this.btnContainer.BorderThickness = new Thickness(4, 4, 4, 4);
-            this.btnContainer.Click += (sender, e) => setLinkToChain();
+            this.btnContainer.BorderThickness = new Thickness(2, 2, 2, 2);
+            this.btnContainer.Click += (sender,e) => setLinkToChain();
+            this.btnContainer.IsEnabled = true;
         }
 
     }

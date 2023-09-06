@@ -206,6 +206,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Entities\calendarItem.cs" />
+    <Compile Include="Entities\MessageBoxEx.cs" />
     <Compile Include="Entities\SqliteConnector.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -254,7 +255,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\link.png" />
+    <Resource Include="Resources\link.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\xxx.jpg" />
