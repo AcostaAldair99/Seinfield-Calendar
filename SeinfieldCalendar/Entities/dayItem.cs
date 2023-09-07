@@ -41,16 +41,47 @@ namespace SeinfieldCalendar.Model
                 Content = setButtonElements(),
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
-                Cursor = Cursors.Hand,
+                //Cursor = Cursors.Hand,
                 Background = Brushes.Transparent,
                 BorderBrush = null,
                 BorderThickness = new Thickness(0)
-        };
+                
+            };
 
-
+            this.btnContainer.MouseEnter += (sender,e) => changeButtonColor(getColorFromHex("#457b9d"),Brushes.Black,2);
+            this.btnContainer.MouseLeave += (sender, e) => changeButtonColor(Brushes.Transparent, Brushes.White,0);
 
             return this.btnContainer;
         }
+
+
+        private void changeButtonColor(SolidColorBrush buttonColor ,SolidColorBrush lblColor,int Thick)
+        {
+            Canvas cv = this.btnContainer.Content as Canvas;
+            int desiredIndex = 0;
+            cv.Background = buttonColor;
+            if (desiredIndex >= 0 && desiredIndex < cv.Children.Count)
+            {
+                UIElement childAtIndex = cv.Children[desiredIndex];
+                Label l = childAtIndex as Label;
+                l.Foreground = lblColor;
+            }
+            this.btnContainer.BorderBrush = buttonColor;
+            this.btnContainer.BorderThickness = new Thickness(Thick, Thick, Thick, 
+                Thick);
+
+        }
+
+        private SolidColorBrush getColorFromHex(string hexValue)
+        {
+            // Convert the hex color value to a Color object
+            Color color = (Color)ColorConverter.ConvertFromString(hexValue);
+
+            // Create a SolidColorBrush using the Color object
+            SolidColorBrush brush = new SolidColorBrush(color);
+            return brush;
+        }
+
 
         private Canvas setButtonElements()
         {
@@ -77,7 +108,7 @@ namespace SeinfieldCalendar.Model
             Canvas.SetTop(lblDay, 0);
             cv.Children.Add(lblDay);
 
-            Canvas.SetLeft(img, 0);
+            Canvas.SetLeft(img, 5);
             Canvas.SetTop(img, 0);
             cv.Children.Add(img);
            
@@ -113,8 +144,8 @@ namespace SeinfieldCalendar.Model
             Image image =   new Image
             {
                 Source = new BitmapImage(new Uri("/Resources/link.png", UriKind.Relative)),
-                Width = 40,
-                Height = 40,
+                Width = 30,
+                Height = 30,
                 Opacity = 0
             };
             return image;

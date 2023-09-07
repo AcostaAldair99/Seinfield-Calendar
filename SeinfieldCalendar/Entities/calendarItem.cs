@@ -8,6 +8,8 @@ using SeinfieldCalendar.Model;
 using System.IO;
 using System.Diagnostics;
 using System.Windows.Documents;
+using System.Windows.Media.Media3D;
+using System.Windows.Media.Imaging;
 
 namespace SeinfieldCalendar.Entities
 {
@@ -57,6 +59,32 @@ namespace SeinfieldCalendar.Entities
 
             this.mainWindow.nextMonthButton.Click += (sender, e) => changeCurrentMonth(1);
             this.mainWindow.prevMonthButton.Click += (senter, e) => changeCurrentMonth(-1);
+
+
+
+            //The configuration for the theme button
+
+            //Get Image for the button
+
+            Image image = new Image
+            {
+                Source = new BitmapImage(new Uri("/Resources/lightbulb.png", UriKind.Relative)),
+                Width = 20,
+                Height = 20,
+                Opacity = 0.9,
+                HorizontalAlignment = HorizontalAlignment.Center,
+            };
+
+            StackPanel sp = new StackPanel();
+
+            sp.Children.Add(image);
+            this.mainWindow.btnTheme.Background = Brushes.Transparent;
+            this.mainWindow.btnTheme.Width = 30;
+            this.mainWindow.btnTheme.Height = 30;
+            this.mainWindow.btnTheme.HorizontalAlignment = HorizontalAlignment.Stretch;
+            this.mainWindow.btnTheme.VerticalAlignment  = VerticalAlignment.Stretch;
+            this.mainWindow.btnTheme.Content = sp;
+            this.mainWindow.Cursor = Cursors.Hand;
         }
 
         private StackPanel setContentButtons(string value)
