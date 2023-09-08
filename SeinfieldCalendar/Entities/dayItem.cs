@@ -129,6 +129,8 @@ namespace SeinfieldCalendar.Model
 
             Border bd = new Border();
             bd.Background = Brushes.Transparent;
+            bd.BorderBrush = labelColor;
+            bd.BorderThickness = new Thickness(0.1);
             bd.Child = cv;
             
            
@@ -137,23 +139,18 @@ namespace SeinfieldCalendar.Model
 
         private void setLinkToChain()
         {
-            MessageBoxButton buttons = MessageBoxButton.YesNo;
-            MessageBoxImage icon = MessageBoxImage.Warning;
-            MessageBoxResult result = SeinfieldCalendar.Entities.MessageBoxEx.askQuestionYesNo(this.wm, "¿You dont break the chain?", "Warning",buttons,icon);
+            MessageBoxResult result = SeinfieldCalendar.Entities.MessageBoxEx.askQuestionYesNo(this.wm, "¿You dont break the chain?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
            if (result == MessageBoxResult.Yes)
            {
-                
-                Canvas cv = this.btnContainer.Content as Canvas;
-                if (cv != null)
-                {
                     //Use the return of query to analize if affected a least one row
                     if (this.itemConnection.insertDate(this.dateOfItem.ToString("dd/MM/yyyy")) > 0)
                     {
-                        setChain();
-                        MessageBoxEx.Show(" ¡ Congratulations You Don't break the chain !", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                      
+                       MessageBoxEx.Show(" ¡ Congratulations You Don't break the chain !", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                       setChain();
                     }
-                }
+                
             }
         }
         private Image getImage()
@@ -177,13 +174,33 @@ namespace SeinfieldCalendar.Model
             if (desiredIndex >= 0 && desiredIndex < cv.Children.Count)
             {
                 UIElement childAtIndex = cv.Children[desiredIndex];
-
-                childAtIndex.Opacity = 0.4;
+                Image img = childAtIndex as Image;
+                animateOpacityChain(img);
+            
             }
             //this.btnContainer.BorderBrush = Brushes.Green;
             //this.btnContainer.BorderThickness = new Thickness(0, 0, 0, 0);
 
         }
+        private void animateOpacityChain(Image img)
+        {
+            DoubleAnimation da = new DoubleAnimation
+            {
+                From = 0,
+                To = 0.4,
+                Duration = TimeSpan.FromSeconds(0.5)
+            };
+            Storyboard storyboard = new Storyboard();
+            storyboard.Children.Add(da);
+
+            // Set the target of the animation
+            Storyboard.SetTarget(da, img);
+            Storyboard.SetTargetProperty(da, new PropertyPath(Image.OpacityProperty));
+
+            // Start the animation
+            storyboard.Begin();
+        }
+
 
         public void setCurrentDay()
         {
