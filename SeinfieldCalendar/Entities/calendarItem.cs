@@ -304,9 +304,8 @@ namespace SeinfieldCalendar.Entities
 
                 if(this.realDate == date.getDayOfItem() && !savedDates.Contains(data))
                 {
-                    //date.setCurrentDay();
+                    date.setCurrentDay();
                 }
-                date.setCurrentDay();
                 if (savedDates.Contains(data) )
                 {
                     date.setChain();

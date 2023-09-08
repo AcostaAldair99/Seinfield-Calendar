@@ -64,18 +64,18 @@ namespace SeinfieldCalendar.Model
         private void changeButtonColor(SolidColorBrush fromColor ,SolidColorBrush toColor,SolidColorBrush lblColor)
         {
             Border bd = this.btnContainer.Content as Border;
-            //cv.Background = toColor;
             animateHoverEvent(bd, fromColor.Color, toColor.Color);
-            /*if (desiredIndex >= 0 && desiredIndex < cv.Children.Count)
-            {
-                UIElement childAtIndex = cv.Children[desiredIndex];
-                Label l = childAtIndex as Label;
-                l.Foreground = lblColor;
-            }*/
         }
 
         private void animateHoverEvent(Border objective,Color fromColor,Color toColor)
         {
+            ThicknessAnimation dA = new ThicknessAnimation
+            {
+                From = new Thickness(0.1),
+                To = new Thickness(0.9),
+                Duration = TimeSpan.FromMilliseconds(20)
+            };
+
             ColorAnimation colorAnimation = new ColorAnimation
             {
                 From = fromColor,
@@ -86,9 +86,13 @@ namespace SeinfieldCalendar.Model
 
             Storyboard storyboard = new Storyboard();
             storyboard.Children.Add(colorAnimation);
+            //storyboard.Children.Add(dA);
 
             Storyboard.SetTarget(colorAnimation, objective);
             Storyboard.SetTargetProperty(colorAnimation, new PropertyPath("Background.Color"));
+
+            //Storyboard.SetTarget(dA, objective);
+            //Storyboard.SetTargetProperty(dA, new PropertyPath("Border.BorderThicknessProperty"));
 
             storyboard.Begin();
         }
@@ -102,7 +106,6 @@ namespace SeinfieldCalendar.Model
                 VerticalAlignment = VerticalAlignment.Center,
                 Content = this.dateOfItem.Day,
                 Foreground = labelColor,
-                //FontWeight = FontWeights.Bold,
                 FontFamily = new FontFamily("Segoe UI"),
                 FontSize = 14,
             };
@@ -178,9 +181,6 @@ namespace SeinfieldCalendar.Model
                 animateOpacityChain(img);
             
             }
-            //this.btnContainer.BorderBrush = Brushes.Green;
-            //this.btnContainer.BorderThickness = new Thickness(0, 0, 0, 0);
-
         }
         private void animateOpacityChain(Image img)
         {
@@ -202,11 +202,10 @@ namespace SeinfieldCalendar.Model
         }
 
 
+
+
         public void setCurrentDay()
         {
-            //SolidColorBrush borderColor = new SolidColorBrush(Colors.Red);
-            //this.btnContainer.BorderBrush = borderColor;
-            //this.btnContainer.BorderThickness = new Thickness(1, 1, 1, 1);
             this.btnContainer.Click += (sender,e) => setLinkToChain();
         }
 
