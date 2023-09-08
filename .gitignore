@@ -1,6 +1,7 @@
 /SeinfieldCalendar/bin
 /SeinfieldCalendar/obj
 /SeinfieldCalendar/Properties
+<<<<<<< HEAD
 
 /SeinfieldCalendar/icon.ico
 /.vs
@@ -12,3 +13,8 @@ LICENSE
 SeinfieldCalendar/Data/
 SeinfieldCalendar/data.db
 SeinfieldCalendar/packages.config
+=======
+/.vs
+
+SeinfieldCalendarApp.sln
+>>>>>>> 24da785 (Add the .gitignore file)
