@@ -1,22 +1,13 @@
-﻿using Newtonsoft.Json.Linq;
+﻿
 using SeinfieldCalendar.Entities;
-using SeinfieldCalendar.Properties;
+
 using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data.SQLite;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Xml.Linq;
 
 namespace SeinfieldCalendar.Model
 {
@@ -25,14 +16,20 @@ namespace SeinfieldCalendar.Model
         private readonly string pathToDb = Path.Combine(Directory.GetCurrentDirectory(), "data.db");
         public DateTime dateOfItem { get; set; }
         public Button btnContainer { get; set; }
-
+        private MainWindow wm;
+        private readonly string HOVER_HEX_COLOR = "#15616d";
         private readonly SqliteConnector itemConnection;
+        private SolidColorBrush labelColor;
+        private SolidColorBrush hoverColor;
 
-        public dayItem(DateTime date,int day)
+        public dayItem(MainWindow wm,DateTime date,int day,SolidColorBrush labelColor,SolidColorBrush hoverColor)
         {
-            dateOfItem = new DateTime(date.Year,date.Month,day);
-            btnContainer = setButton();
-            itemConnection = new SqliteConnector(pathToDb);
+            this.labelColor = labelColor;
+            this.hoverColor = hoverColor;
+            this.dateOfItem = new DateTime(date.Year,date.Month,day);
+            this.btnContainer = setButton();
+            this.itemConnection = new SqliteConnector(pathToDb);
+            this.wm = wm;
         }
 
         public DateTime getDayOfItem()
@@ -42,44 +39,91 @@ namespace SeinfieldCalendar.Model
 
         public Button setButton()
         {
-
             this.btnContainer = new Button
             {
                 Content = setButtonElements(),
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                Background = Brushes.Transparent,
+                BorderBrush = null,
+                BorderThickness = new Thickness(0)
+                
             };
 
-            return btnContainer;
+            this.btnContainer.MouseEnter += (sender,e) => changeButtonColor(hoverColor,labelColor);
+            this.btnContainer.MouseLeave += (sender, e) => changeButtonColor(Brushes.Transparent, labelColor);
+
+            return this.btnContainer;
         }
 
-        private StackPanel setButtonElements()
+
+        private void changeButtonColor(SolidColorBrush buttonColor ,SolidColorBrush lblColor)
+        {
+            Canvas cv = this.btnContainer.Content as Canvas;
+            int desiredIndex = 0;
+            cv.Background = buttonColor;
+            if (desiredIndex >= 0 && desiredIndex < cv.Children.Count)
+            {
+                UIElement childAtIndex = cv.Children[desiredIndex];
+                Label l = childAtIndex as Label;
+                l.Foreground = lblColor;
+            }
+        }
+
+        private Canvas setButtonElements()
         {
             Label lblDay = new Label
             {
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Content = this.dateOfItem.Day
+                VerticalAlignment = VerticalAlignment.Center,
+                Content = this.dateOfItem.Day,
+                Foreground = labelColor,
+                //FontWeight = FontWeights.Bold,
+                FontFamily = new FontFamily("Segoe UI"),
+                FontSize = 14,
             };
-            StackPanel cv = new StackPanel();
+
+
+            Image img = getImage();
+
+
+
+            Canvas cv = new Canvas();
+            cv.Height = 40;
+            cv.Width = 40;
+
+            Canvas.SetLeft(lblDay, 10);
+            Canvas.SetTop(lblDay, 0);
             cv.Children.Add(lblDay);
+
+            Canvas.SetLeft(img, 5);
+            Canvas.SetTop(img, 0);
+            cv.Children.Add(img);
+           
+
+            Canvas.SetZIndex(img, cv.Children.Count - 1);
+
             return cv;
         }
 
         private void setLinkToChain()
         {
-            MessageBoxResult result = MessageBox.Show("¿You dont break the chain?", "Question",
-                                                      MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (result == MessageBoxResult.Yes)
-            {
+            MessageBoxButton buttons = MessageBoxButton.YesNo;
+            MessageBoxImage icon = MessageBoxImage.Warning;
+            MessageBoxResult result = SeinfieldCalendar.Entities.MessageBoxEx.askQuestionYesNo(this.wm, "¿You dont break the chain?", "Warning",buttons,icon);
 
-                StackPanel sp = this.btnContainer.Content as StackPanel;
-                if (sp != null)
+           if (result == MessageBoxResult.Yes)
+           {
+                
+                Canvas cv = this.btnContainer.Content as Canvas;
+                if (cv != null)
                 {
                     //Use the return of query to analize if affected a least one row
                     if (this.itemConnection.insertDate(this.dateOfItem.ToString("dd/MM/yyyy")) > 0)
                     {
                         setChain();
+                        MessageBoxEx.Show(" ¡ Congratulations You Don't break the chain !", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                 }
             }
@@ -88,29 +132,36 @@ namespace SeinfieldCalendar.Model
         {
             Image image =   new Image
             {
-                Source = new BitmapImage(new Uri("/Resources/xxx.jpg", UriKind.Relative)),
-                Width = 40,
-                Height = 40
+                Source = new BitmapImage(new Uri("/Resources/link.png", UriKind.Relative)),
+                Width = 30,
+                Height = 30,
+                Opacity = 0
             };
             return image;
         }
 
         public void setChain()
         {
-            this.btnContainer.BorderBrush = null;
-            this.btnContainer.BorderThickness = new Thickness(0);
-            StackPanel sp = this.btnContainer.Content as StackPanel;
-            sp.Children.RemoveAt(0);
-            Image img = getImage();
-            sp.Children.Add(img);
+            Canvas cv = this.btnContainer.Content as Canvas;
+            int desiredIndex = 1;
+
+            if (desiredIndex >= 0 && desiredIndex < cv.Children.Count)
+            {
+                UIElement childAtIndex = cv.Children[desiredIndex];
+
+                childAtIndex.Opacity = 0.4;
+            }
+            //this.btnContainer.BorderBrush = Brushes.Green;
+            //this.btnContainer.BorderThickness = new Thickness(0, 0, 0, 0);
+
         }
 
         public void setCurrentDay()
         {
-            SolidColorBrush borderColor = new SolidColorBrush(Colors.Red);
-            this.btnContainer.BorderBrush = borderColor;
-            this.btnContainer.BorderThickness = new Thickness(4, 4, 4, 4);
-            this.btnContainer.Click += (sender, e) => setLinkToChain();
+            //SolidColorBrush borderColor = new SolidColorBrush(Colors.Red);
+            //this.btnContainer.BorderBrush = borderColor;
+            //this.btnContainer.BorderThickness = new Thickness(1, 1, 1, 1);
+            this.btnContainer.Click += (sender,e) => setLinkToChain();
         }
 
     }

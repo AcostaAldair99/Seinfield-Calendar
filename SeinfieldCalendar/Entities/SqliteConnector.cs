@@ -30,11 +30,10 @@ namespace SeinfieldCalendar.Entities
         {
             string month = currentDate.ToString("MM");
             string year = currentDate.ToString("yyyy");
-            //In this dictionary we store all the dates
+            //In this list we store all the dates
             List<string> dates = new List<string>();
             this.conn.Open();
             string selectQuery = $"SELECT * FROM chain_dates WHERE month = '{month}' AND year='{year}'";
-            Debug.WriteLine(selectQuery);
             using (SQLiteCommand command = new SQLiteCommand(selectQuery, this.conn))
             {
                 using (SQLiteDataReader reader = command.ExecuteReader())
@@ -66,6 +65,7 @@ namespace SeinfieldCalendar.Entities
                 command.Parameters.AddWithValue("@Value4", dateValues[2]);
 
                 //The functions ExecuteNonQuery returns the number of affected rows
+                //so we gonna use the integer to check if the query is successfull
                 rowsAffected = command.ExecuteNonQuery();
             }
             this.conn.Close();
