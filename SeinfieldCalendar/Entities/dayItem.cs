@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 
 namespace SeinfieldCalendar.Model
@@ -51,27 +52,49 @@ namespace SeinfieldCalendar.Model
                 
             };
 
-            this.btnContainer.MouseEnter += (sender,e) => changeButtonColor(hoverColor,labelColor);
-            this.btnContainer.MouseLeave += (sender, e) => changeButtonColor(Brushes.Transparent, labelColor);
+            this.btnContainer.MouseEnter += (sender,e) => changeButtonColor(Brushes.Transparent,hoverColor,labelColor);
+            this.btnContainer.MouseLeave += (sender, e) => changeButtonColor(hoverColor, Brushes.Transparent, labelColor);
 
             return this.btnContainer;
         }
 
 
-        private void changeButtonColor(SolidColorBrush buttonColor ,SolidColorBrush lblColor)
+
+
+        private void changeButtonColor(SolidColorBrush fromColor ,SolidColorBrush toColor,SolidColorBrush lblColor)
         {
-            Canvas cv = this.btnContainer.Content as Canvas;
-            int desiredIndex = 0;
-            cv.Background = buttonColor;
-            if (desiredIndex >= 0 && desiredIndex < cv.Children.Count)
+            Border bd = this.btnContainer.Content as Border;
+            //cv.Background = toColor;
+            animateHoverEvent(bd, fromColor.Color, toColor.Color);
+            /*if (desiredIndex >= 0 && desiredIndex < cv.Children.Count)
             {
                 UIElement childAtIndex = cv.Children[desiredIndex];
                 Label l = childAtIndex as Label;
                 l.Foreground = lblColor;
-            }
+            }*/
         }
 
-        private Canvas setButtonElements()
+        private void animateHoverEvent(Border objective,Color fromColor,Color toColor)
+        {
+            ColorAnimation colorAnimation = new ColorAnimation
+            {
+                From = fromColor,
+                To = toColor,
+                Duration = TimeSpan.FromMilliseconds(20)
+            };
+
+
+            Storyboard storyboard = new Storyboard();
+            storyboard.Children.Add(colorAnimation);
+
+            Storyboard.SetTarget(colorAnimation, objective);
+            Storyboard.SetTargetProperty(colorAnimation, new PropertyPath("Background.Color"));
+
+            storyboard.Begin();
+        }
+
+
+    private Border setButtonElements()
         {
             Label lblDay = new Label
             {
@@ -104,7 +127,12 @@ namespace SeinfieldCalendar.Model
 
             Canvas.SetZIndex(img, cv.Children.Count - 1);
 
-            return cv;
+            Border bd = new Border();
+            bd.Background = Brushes.Transparent;
+            bd.Child = cv;
+            
+           
+            return bd;
         }
 
         private void setLinkToChain()
@@ -142,7 +170,8 @@ namespace SeinfieldCalendar.Model
 
         public void setChain()
         {
-            Canvas cv = this.btnContainer.Content as Canvas;
+            Border bd = this.btnContainer.Content as Border;
+            Canvas cv = bd.Child as Canvas;
             int desiredIndex = 1;
 
             if (desiredIndex >= 0 && desiredIndex < cv.Children.Count)
