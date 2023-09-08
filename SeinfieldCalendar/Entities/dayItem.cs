@@ -2,7 +2,6 @@
 using SeinfieldCalendar.Entities;
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,14 +17,18 @@ namespace SeinfieldCalendar.Model
         public DateTime dateOfItem { get; set; }
         public Button btnContainer { get; set; }
         private MainWindow wm;
-
+        private readonly string HOVER_HEX_COLOR = "#15616d";
         private readonly SqliteConnector itemConnection;
+        private SolidColorBrush labelColor;
+        private SolidColorBrush hoverColor;
 
-        public dayItem(MainWindow wm,DateTime date,int day)
+        public dayItem(MainWindow wm,DateTime date,int day,SolidColorBrush labelColor,SolidColorBrush hoverColor)
         {
-            dateOfItem = new DateTime(date.Year,date.Month,day);
-            btnContainer = setButton();
-            itemConnection = new SqliteConnector(pathToDb);
+            this.labelColor = labelColor;
+            this.hoverColor = hoverColor;
+            this.dateOfItem = new DateTime(date.Year,date.Month,day);
+            this.btnContainer = setButton();
+            this.itemConnection = new SqliteConnector(pathToDb);
             this.wm = wm;
         }
 
@@ -41,21 +44,21 @@ namespace SeinfieldCalendar.Model
                 Content = setButtonElements(),
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
-                //Cursor = Cursors.Hand,
+                Cursor = Cursors.Hand,
                 Background = Brushes.Transparent,
                 BorderBrush = null,
                 BorderThickness = new Thickness(0)
                 
             };
 
-            this.btnContainer.MouseEnter += (sender,e) => changeButtonColor(getColorFromHex("#457b9d"),Brushes.Black,2);
-            this.btnContainer.MouseLeave += (sender, e) => changeButtonColor(Brushes.Transparent, Brushes.White,0);
+            this.btnContainer.MouseEnter += (sender,e) => changeButtonColor(hoverColor,labelColor);
+            this.btnContainer.MouseLeave += (sender, e) => changeButtonColor(Brushes.Transparent, labelColor);
 
             return this.btnContainer;
         }
 
 
-        private void changeButtonColor(SolidColorBrush buttonColor ,SolidColorBrush lblColor,int Thick)
+        private void changeButtonColor(SolidColorBrush buttonColor ,SolidColorBrush lblColor)
         {
             Canvas cv = this.btnContainer.Content as Canvas;
             int desiredIndex = 0;
@@ -66,22 +69,7 @@ namespace SeinfieldCalendar.Model
                 Label l = childAtIndex as Label;
                 l.Foreground = lblColor;
             }
-            this.btnContainer.BorderBrush = buttonColor;
-            this.btnContainer.BorderThickness = new Thickness(Thick, Thick, Thick, 
-                Thick);
-
         }
-
-        private SolidColorBrush getColorFromHex(string hexValue)
-        {
-            // Convert the hex color value to a Color object
-            Color color = (Color)ColorConverter.ConvertFromString(hexValue);
-
-            // Create a SolidColorBrush using the Color object
-            SolidColorBrush brush = new SolidColorBrush(color);
-            return brush;
-        }
-
 
         private Canvas setButtonElements()
         {
@@ -90,9 +78,10 @@ namespace SeinfieldCalendar.Model
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
                 Content = this.dateOfItem.Day,
-                Foreground = Brushes.White,
+                Foreground = labelColor,
                 //FontWeight = FontWeights.Bold,
-                FontFamily = new FontFamily("Segoe UI")
+                FontFamily = new FontFamily("Segoe UI"),
+                FontSize = 14,
             };
 
 
@@ -169,9 +158,9 @@ namespace SeinfieldCalendar.Model
 
         public void setCurrentDay()
         {
-            SolidColorBrush borderColor = new SolidColorBrush(Colors.Red);
-            this.btnContainer.BorderBrush = borderColor;
-            this.btnContainer.BorderThickness = new Thickness(1, 1, 1, 1);
+            //SolidColorBrush borderColor = new SolidColorBrush(Colors.Red);
+            //this.btnContainer.BorderBrush = borderColor;
+            //this.btnContainer.BorderThickness = new Thickness(1, 1, 1, 1);
             this.btnContainer.Click += (sender,e) => setLinkToChain();
         }
 

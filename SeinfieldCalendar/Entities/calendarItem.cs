@@ -22,29 +22,75 @@ namespace SeinfieldCalendar.Entities
         private readonly List<string> days = new List<string> { "Su", "Mo", "Tu", "We", "Th", "Fr", "Sa" };
         private readonly MainWindow mainWindow;
         private readonly DateTime realDate;
+        private SolidColorBrush HOVER_HEX_COLOR;
+        private SolidColorBrush FONTS_COLOR;
+        private SolidColorBrush WINDOW_COLOR;
+        private bool THEME = false;
 
         public calendarItem(MainWindow mw,DateTime currentDate)
         {
             this.mainWindow = mw;
             this.currentDate = currentDate;
             this.realDate = currentDate;
-    }
+        }
 
 
         public void createCalendar()
         {
             setCalendarColumns();
             setCalendarRows();
-            setLabelDays();
             setCalendarElements();
+            setElementsWithTheme("#001524", "#15616d", "#FFFFFF");
+        }
+
+        public void setElementsWithTheme(string WindowColor,string hoverColor, string labelColor)
+        {
+            Color windowColor = (Color)ColorConverter.ConvertFromString(WindowColor);
+            WINDOW_COLOR = new SolidColorBrush(windowColor);
+            this.mainWindow.Background = WINDOW_COLOR;
+            
+            Color lblcolor = (Color)ColorConverter.ConvertFromString(labelColor);
+            FONTS_COLOR = new SolidColorBrush(lblcolor);
+
+            Color hovercolor = (Color)ColorConverter.ConvertFromString(hoverColor);
+            HOVER_HEX_COLOR = new SolidColorBrush(hovercolor);
+
+
+            this.mainWindow.titleLabel.Foreground = FONTS_COLOR;
+            this.mainWindow.monthLabel.Foreground = FONTS_COLOR;
+
+            StackPanel lblprev = this.mainWindow.prevMonthButton.Content as StackPanel;
+            int desiredIndex = 0;
+
+            if (desiredIndex >= 0 && desiredIndex < lblprev.Children.Count)
+            {
+                UIElement childAtIndex = lblprev.Children[desiredIndex];
+                Label l = childAtIndex as Label;
+                l.Foreground = FONTS_COLOR;
+            }
+
+
+            StackPanel lblnext = this.mainWindow.nextMonthButton.Content as StackPanel;
+            int index = 0;
+
+            if (index >= 0 && index < lblnext.Children.Count)
+            {
+                UIElement childAtIndex = lblnext.Children[index];
+                Label l = childAtIndex as Label;
+                l.Foreground = FONTS_COLOR;
+            }
+
+            setLabelDays();
             setDaysOfTheMonth();
         }
 
 
+
         private void setCalendarElements()
         {
-            this.mainWindow.monthLabel.Content = new DateTime(this.currentDate.Year, this.currentDate.Month + 1, 1).ToString("yyyy MMM");
-            this.mainWindow.monthLabel.Foreground = Brushes.White;
+            this.mainWindow.titleLabel.Foreground = FONTS_COLOR;
+            this.mainWindow.monthLabel.Content = new DateTime(this.currentDate.Year, this.currentDate.Month, 1).ToString("yyyy MMM");
+            this.mainWindow.monthLabel.Foreground = FONTS_COLOR;
 
 
             this.mainWindow.nextMonthButton.Cursor = Cursors.Hand;
@@ -59,7 +105,11 @@ namespace SeinfieldCalendar.Entities
 
             this.mainWindow.nextMonthButton.Click += (sender, e) => changeCurrentMonth(1);
             this.mainWindow.prevMonthButton.Click += (senter, e) => changeCurrentMonth(-1);
+            this.mainWindow.nextMonthButton.MouseLeave += (sender, e) => changeButtonColor(this.mainWindow.nextMonthButton,Brushes.Transparent);
+            this.mainWindow.nextMonthButton.MouseEnter += (sender, e) => changeButtonColor(this.mainWindow.nextMonthButton, HOVER_HEX_COLOR);
 
+            this.mainWindow.prevMonthButton.MouseLeave += (sender, e) => changeButtonColor(this.mainWindow.prevMonthButton, Brushes.Transparent);
+            this.mainWindow.prevMonthButton.MouseEnter += (sender, e) => changeButtonColor(this.mainWindow.prevMonthButton,HOVER_HEX_COLOR);
 
 
             //The configuration for the theme button
@@ -73,6 +123,7 @@ namespace SeinfieldCalendar.Entities
                 Height = 20,
                 Opacity = 0.9,
                 HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
             };
 
             StackPanel sp = new StackPanel();
@@ -81,11 +132,54 @@ namespace SeinfieldCalendar.Entities
             this.mainWindow.btnTheme.Background = Brushes.Transparent;
             this.mainWindow.btnTheme.Width = 30;
             this.mainWindow.btnTheme.Height = 30;
-            this.mainWindow.btnTheme.HorizontalAlignment = HorizontalAlignment.Stretch;
-            this.mainWindow.btnTheme.VerticalAlignment  = VerticalAlignment.Stretch;
+            this.mainWindow.btnTheme.HorizontalAlignment = HorizontalAlignment.Center;
+            this.mainWindow.btnTheme.VerticalAlignment  = VerticalAlignment.Center;
             this.mainWindow.btnTheme.Content = sp;
-            this.mainWindow.Cursor = Cursors.Hand;
+            this.mainWindow.btnTheme.Cursor = Cursors.Hand;
+            this.mainWindow.btnTheme.MouseLeave += (sender, e) => changeButtonColor(this.mainWindow.btnTheme, Brushes.Transparent);
+            this.mainWindow.btnTheme.MouseEnter += (sender, e) => changeButtonColor(this.mainWindow.btnTheme, HOVER_HEX_COLOR);
+            this.mainWindow.btnTheme.Click += (sender, e) => setTheme();
         }
+
+        private void setTheme()
+        {
+            if(THEME == false)
+            {
+                setElementsWithTheme("#e8eddf", "#cfdbd5", "#000000");
+                changeImageButton("/Resources/sleep-mode.png");
+                THEME = true;
+            }
+            else
+            {
+                setElementsWithTheme("#001524", "#15616d", "#FFFFFF");
+                changeImageButton("/Resources/lightbulb.png");
+                THEME = false;
+            }
+        }
+
+        private void changeImageButton(string pathToImage)
+        {
+            Image image = new Image
+            {
+                Source = new BitmapImage(new Uri(pathToImage, UriKind.Relative)),
+                Width = 20,
+                Height = 20,
+                Opacity = 0.9,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+
+            StackPanel sp = this.mainWindow.btnTheme.Content as StackPanel;
+            sp.Children.RemoveAt(0);
+            sp.Children.Add(image);
+        }
+
+        private void changeButtonColor(Button btn,SolidColorBrush buttonColor)
+        {
+            StackPanel sp = btn.Content as StackPanel;
+            sp.Background = buttonColor;
+        }
+
 
         private StackPanel setContentButtons(string value)
         {
@@ -93,17 +187,20 @@ namespace SeinfieldCalendar.Entities
             {
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Content = value,
-                Foreground = Brushes.White,
                 FontWeight = FontWeights.Bold,
-                FontFamily = new FontFamily("Segoe UI")
+                FontFamily = new FontFamily("Segoe UI"),
+                //Width = 35,
+                Background = Brushes.Transparent
             };
             StackPanel cv = new StackPanel();
             cv.Children.Add(content);
+            cv.Width = 35;
             return cv;
         }
 
         private void setLabelDays()
         {
+            this.mainWindow.seinfieldCalendar.Children.Clear();
             int i = 0;
             foreach (string day in days)
             {
@@ -112,7 +209,7 @@ namespace SeinfieldCalendar.Entities
                     Content = day,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
-                    Foreground = Brushes.White,
+                    Foreground = FONTS_COLOR,
                     FontWeight = FontWeights.Bold,
                     FontFamily = new FontFamily("Segoe UI")
                 };
@@ -201,7 +298,7 @@ namespace SeinfieldCalendar.Entities
                 int row = (day + (int)firstDayOfMonth.DayOfWeek - 1) / 7 + 1;
                 int column = ((day - 1) + (int)firstDayOfMonth.DayOfWeek) % 7;
 
-                dayItem date = new dayItem(this.mainWindow, this.currentDate, day);
+                dayItem date = new dayItem(this.mainWindow, this.currentDate, day,FONTS_COLOR,HOVER_HEX_COLOR);
                 string data = date.getDayOfItem().ToString("dd/MM/yyyy");
 
                 if(this.realDate == date.getDayOfItem() && !savedDates.Contains(data))
